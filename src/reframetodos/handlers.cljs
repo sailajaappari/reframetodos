@@ -5,17 +5,39 @@
 
 
 
-(def state {:todos adding
-            :all-todos nil
-            :active-todos nil 
-            :complete-todos nil})
+(def initial-state {:todos adding}) 
 
-
+;;Handlers
 (register-handler
   :initialize
   (fn
     [db _]
-    (merge db state)))
+    (merge db initial-state)))
+
+(register-handler
+  :add
+  (fn [db item]
+    (f/add-to-vector (f/create-todo item))))
+
+(register-handler
+  :delete
+  (fn [db id]
+    (remove #(= (:id %) id) (:todos db))))
+
+(register-handler
+  :all
+  (fn [db _]
+    db))
+
+(register-handler
+  :active
+  (fn [db _]
+    (filter #(= (:active %) true) (:todos db))))
+
+(register-handler
+  :complete
+  (fn [db _]
+    (filter #(= (:active %) false) (:todos db))))
   
 
 ;;subscribers
