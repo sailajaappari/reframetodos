@@ -19,3 +19,6 @@
               (add-to-vector (create-todo "Html"))
               (add-to-vector (create-todo "JavaScript"))
               (add-to-vector (create-todo "ClojureScript"))))
+
+(defn ActiveTodosCount [todos]
+  (count (filter #(= (:active %) true) @todos)))

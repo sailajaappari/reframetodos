@@ -1,52 +1,76 @@
 (ns reframetodos.views
   (:require [re-frame.core :refer [subscribe dispatch]]
-            [reagent.core :as r]))
+            [reagent.core :as r]
+            [reframetodos.functions :as f]))
 
 (def click-value (r/atom ""))
 
-(defn List-Todo [todos1]
-   (fn []
-     [:div
-      [:table
-       [:tbody
-        (for [i (range 0 (count @todos1))]
-          ^{:key i}
-          [:tr
-           [:td (get-in @todos1 [i :task])]
-           [:td 
-            [:button {:on-click #(dispatch [:delete 
-                                            (get-in @todos1 [i :id])])} "X"]]])]]
-          [:p (str @todos1)]]))
-
-
-(defn Add-Todo-List []
-  (let [text (atom "")]
+(defn List-Todo []
+  (let [todos (subscribe [:temptodos])]
     (fn []
       [:div
-       [:span
-        [:input {:type "text"
-                 :placeholder "Enter todo"
-                 :on-change #(reset! text (-> % .-target .-value))}]
-        [:button {:on-click #(List-Todo (dispatch [:add text]))} "Add"]]])))
+       [:table
+        [:tbody
+         (for [i (range 0 (count @todos))]
+           ^{:key i}
+           [:tr
+            [:td (get-in @todos [i :task])]
+            (if (get-in @todos [i :active])
+              [:td "P"]
+              [:td "D"])
+            (if (get-in @todos [i :active])
+              [:td
+               [:button {:on-click 
+                         #(do 
+                            (dispatch [:active-to-complete i])
+                            (dispatch [:todos-to-temp]))} 
+                "Mark Done"]]
+              [:td
+               [:button {:on-click 
+                         #(do 
+                            (dispatch [:complete-to-active i])
+                            (dispatch [:todos-to-temp]))} 
+                "Mark Pending"]])
+            [:td 
+             [:button {:on-click #(do 
+                                   (dispatch [:delete (get-in @todos [i :id])])
+                                   (dispatch [:todos-to-temp]))} "X"]]])]]
+       [:p (str @todos)]])))
 
 
-(defn Footer-Filters []
-  [:div
-   [:span
-    [:button {:value @click-value
-              :on-click #(List-Todo (dispatch [:all]))} "All"]
-    [:button {:value @click-value
-              :on-click #(List-Todo (dispatch [:active]))} "Active"]
-    [:button {:value @click-value
-              :on-click #(List-Todo (dispatch [:complete]))} "Complete"]
-    [:button "ClearComplete"]]])
-
-#_(defn Footer-Filters []
-  (let [todos (subscribe [:todos])]
-    (case @click-value
-      "All" (List-Todo todos)
-      "Active" (List-Todo (dispatch [:active]))
-      "Complete" (List-Todo (dispatch [:complete]))
-      (List-Todo todos))))
+ (defn Add-Todo-List []
+   (let [text (atom "")]
+     (fn []
+       [:div
+        [:span
+         [:input {:type "text"
+                  :placeholder "Enter todo"
+                  :on-change #(reset! text (-> % .-target .-value))}]
+         [:button {:on-click #(do 
+                                (dispatch [:add @text])
+                                (dispatch [:todos-to-temp]))} "Add"]]])))
 
 
+(defn footer []
+  (fn []
+    [:div
+     [:span
+      [:span "Items Left: " (f/ActiveTodosCount (subscribe [:todos]))]
+      [:button {:on-click #(dispatch [:all])} "All"]
+      
+      [:button {:on-click #(dispatch [:active])} "Active"]
+        
+      [:button {:on-click #(dispatch [:complete])} "Complete"]
+        
+      [:button {:on-click #(dispatch [:clear-complete])} "ClearComplete"]]]))
+
+ #_(defn filters []
+     (let [todos1 (subscribe [:todos])
+           active (subscribe [:active-todos])
+           complete (subscribe [:complete-todos]
+           all (subscribe [:all-todos]))]
+       (case @click-value
+         "All" (List-Todo all)
+         "Active" (List-Todo active)
+         "Complete" (List-Todo complete)
+         (List-Todo todos1))))
