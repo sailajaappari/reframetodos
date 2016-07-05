@@ -18,19 +18,20 @@
             (if (get-in @todos [i :active])
               [:td "P"]
               [:td "D"])
-            (if (get-in @todos [i :active])
-              [:td
+            [:td            
+             (if (= (get-in @todos [i :active]) true)
+               
                [:button {:on-click 
                          #(do 
-                            (dispatch [:active-to-complete i])
+                            (dispatch [:change-active-state i])
                             (dispatch [:todos-to-temp]))} 
-                "Mark Done"]]
-              [:td
+                "Mark Done"]
+               
                [:button {:on-click 
                          #(do 
-                            (dispatch [:complete-to-active i])
+                            (dispatch [:change-active-state i])
                             (dispatch [:todos-to-temp]))} 
-                "Mark Pending"]])
+                "Mark Pending"])]
             [:td 
              [:button {:on-click #(do 
                                    (dispatch [:delete (get-in @todos [i :id])])

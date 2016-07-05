@@ -28,22 +28,18 @@
     (assoc-in db [:todos (count (:todos db))] (f/create-todo item))))
 
 (register-handler
-  :active-to-complete
+  :change-active-state
   (fn [db [_ index]]
-    (assoc-in db [:todos index :active] false)))
+    (update-in db [:todos index :active] not [:todos index :active])))
 
-(register-handler
-  :complete-to-active
-  (fn [db [_ index]]
-    (assoc-in db [:temp-todos index :active] true)))
 
 (register-handler
   :delete
   (fn [db [_ id]]
-    (update-in db [:temp-todos] #(into [] 
+    (update-in db [:todos] #(into [] 
                                   (remove (fn [x] 
                                             (= (:id x) id)) 
-                                     (:temp-todos db))))))
+                                     (:todos db))))))
 
 (register-handler
   :all
