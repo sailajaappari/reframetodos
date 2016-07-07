@@ -11,7 +11,7 @@
 (defn home []
   [:div
    [Add-Todo-List]
-   [List-Todo]
+   [List-Todo] 
    [footer]])
 
 (defn main []
